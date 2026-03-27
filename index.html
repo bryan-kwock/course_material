@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语单词拼图 - English Puzzle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>英语单词拼图</h1>
+            <div class="stats">
+                <span class="level">关卡: <span id="level">1</span></span>
+                <span class="correct">已完成: <span id="completed">0</span>/<span id="total">1</span></span>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <!-- 拼图背景区域 -->
+            <div id="puzzle-container" class="puzzle-container">
+                <div class="puzzle-background">
+                    <img id="background-image" src="" alt="背景">
+                </div>
+                <div id="puzzle-grid" class="puzzle-grid"></div>
+                <div class="hearts-container" id="hearts-container">
+                    <span id="hearts">❤️ ❤️ ❤️ ❤️ ❤️</span>
+                </div>
+            </div>
+
+            <!-- 单词输入区域 -->
+            <div class="word-area">
+                <div class="meaning">
+                    <strong>词义:</strong> <span id="word-meaning"></span>
+                </div>
+                <div id="letter-inputs" class="letter-inputs"></div>
+                <div class="hint">
+                    <button id="hint-btn" class="hint-btn">提示 (显示一个字母)</button>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="skip-btn" class="skip-btn">跳过这题</button>
+                <button id="restart-btn" class="restart-btn">重新开始</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="words.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

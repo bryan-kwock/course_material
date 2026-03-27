@@ -1,0 +1,290 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.game-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 900px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.game-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.game-header h1 {
+    font-size: 24px;
+    color: #333;
+}
+
+.stats {
+    display: flex;
+    gap: 20px;
+    font-size: 16px;
+    color: #555;
+    align-items: center;
+}
+
+.hearts-container {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 20px;
+    z-index: 10;
+}
+
+.game-main {
+    padding: 20px;
+}
+
+.puzzle-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    max-height: 450px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.puzzle-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.puzzle-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(8px);
+    opacity: 0.3;
+}
+
+.puzzle-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.puzzle-piece {
+    background-color: #888;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.puzzle-piece.revealed {
+    background-color: transparent;
+}
+
+.word-area {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.meaning {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #333;
+    text-align: center;
+}
+
+.letter-inputs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.letter-input {
+    width: 44px;
+    height: 50px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.letter-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.letter-input.correct {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.letter-input.incorrect {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.letter-input:first-child {
+    border-color: #667eea;
+    background: #e8eaf6;
+}
+
+.hint {
+    text-align: center;
+}
+
+.hint-btn {
+    background: #ffc107;
+    color: #333;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.hint-btn:hover {
+    background: #e0a800;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.skip-btn, .restart-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.skip-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.skip-btn:hover {
+    background: #5a6268;
+}
+
+.restart-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.restart-btn:hover {
+    background: #c82333;
+}
+
+.level-complete {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    z-index: 100;
+    animation: popIn 0.3s ease;
+}
+
+.level-complete h2 {
+    color: #28a745;
+    margin-bottom: 15px;
+}
+
+.level-complete button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.level-complete button:hover {
+    background: #5a6fd8;
+}
+
+@keyframes popIn {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .game-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .letter-input {
+        width: 36px;
+        height: 42px;
+        font-size: 20px;
+    }
+
+    .controls {
+        flex-direction: column;
+    }
+
+    .level-complete {
+        padding: 25px;
+        margin: 20px;
+    }
+}
