@@ -5,9 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>英语单词拼图 - English Puzzle</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-    <div class="game-container">
+    <div id="upload-panel" class="upload-panel">
+        <h2>英语单词拼图</h2>
+        <p>请上传包含单词和释义的Excel文件</p>
+        <p>格式：第一列为单词，第二列为中文释义</p>
+        <div class="upload-area">
+            <input type="file" id="excel-file" accept=".xlsx,.xls,.csv">
+            <button id="start-custom" class="start-btn">开始学习</button>
+        </div>
+        <p class="divider">或</p>
+        <button id="start-default" class="default-btn">使用默认词库开始</button>
+    </div>
+
+    <div id="game-container" class="game-container" style="display: none;">
         <header class="game-header">
             <h1>英语单词拼图</h1>
             <div class="stats">
@@ -43,6 +56,9 @@
                 <button id="skip-btn" class="skip-btn">跳过这题</button>
                 <button id="restart-btn" class="restart-btn">重新开始</button>
             </div>
+        </main>
+    </div>
+
         </main>
     </div>
 

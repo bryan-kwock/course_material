@@ -288,3 +288,78 @@ body {
         margin: 20px;
     }
 }
+
+/* Upload Panel */
+.upload-panel {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 100%;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.upload-panel h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.upload-panel p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    margin: 30px 0;
+}
+
+#excel-file {
+    font-size: 16px;
+    padding: 10px;
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+    width: 80%;
+}
+
+.start-btn, .default-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.start-btn {
+    background: #667eea;
+    color: white;
+}
+
+.start-btn:hover {
+    background: #5a6fd8;
+}
+
+.default-btn {
+    background: #28a745;
+    color: white;
+}
+
+.default-btn:hover {
+    background: #218838;
+}
+
+.divider {
+    color: #999;
+    margin: 20px 0;
+}
+
+.game-over-modal {
+    max-width: 600px;
+}

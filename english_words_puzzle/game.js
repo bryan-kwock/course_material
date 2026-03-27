@@ -13,12 +13,19 @@ class WordPuzzleGame {
         this.wrongCount = 0;
         this.wrongWords = [];
 
+        // 自定义单词列表模式
+        this.customWordMode = false;
+        this.customWords = [];
+        this.wordStatus = new Map(); // word -> {correct: boolean, wrongCount: number}
+        this.pendingWords = []; // 待学习单词（错误的会重复出现）
+
         this.initElements();
-        this.bindEvents();
-        this.startLevel();
+        this.bindUploadEvents();
     }
 
     initElements() {
+        this.uploadPanel = document.getElementById('upload-panel');
+        this.gameContainer = document.getElementById('game-container');
         this.puzzleGrid = document.getElementById('puzzle-grid');
         this.backgroundImage = document.getElementById('background-image');
         this.letterInputs = document.getElementById('letter-inputs');
@@ -31,10 +38,142 @@ class WordPuzzleGame {
         this.restartBtn = document.getElementById('restart-btn');
     }
 
-    bindEvents() {
+    bindUploadEvents() {
+        document.getElementById('start-default').addEventListener('click', () => {
+            this.startDefaultGame();
+        });
+        document.getElementById('start-custom').addEventListener('click', () => {
+            this.startCustomGame();
+        });
+        document.getElementById('excel-file').addEventListener('change', (e) => {
+            this.handleFileUpload(e);
+        });
+    }
+
+    async handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const fileName = file.name.toLowerCase();
+
+        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+            // Excel 文件
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+
+                this.customWords = jsonData
+                    .filter(row => row.length >= 2 && row[0] && row[1])
+                    .map(row => ({
+                        word: String(row[0]).trim().toLowerCase(),
+                        meaning: String(row[1]).trim()
+                    }));
+
+                if (this.customWords.length === 0) {
+                    alert('Excel文件中没有找到有效的单词数据，请检查格式');
+                } else {
+                    alert(`成功加载 ${this.customWords.length} 个单词`);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } else if (fileName.endsWith('.csv')) {
+            // CSV 文件 - 尝试多种编码
+            const arrayBuffer = await file.arrayBuffer();
+            let words = [];
+            // 先尝试 UTF-8
+            try {
+                const text = new TextDecoder('utf-8').decode(arrayBuffer);
+                words = this.parseCSV(text);
+            } catch (e) {
+                // 如果失败，尝试 GBK
+                try {
+                    const text = new TextDecoder('gbk').decode(arrayBuffer);
+                    words = this.parseCSV(text);
+                } catch (e2) {
+                    words = [];
+                }
+            }
+
+            // 如果还是空，尝试 gbk 解码使用默认方式
+            if (words.length === 0) {
+                try {
+                    const text = new TextDecoder('gb18030').decode(arrayBuffer);
+                    words = this.parseCSV(text);
+                } catch (e) {
+                    // 最后尝试 ISO-8859-1
+                    const text = new TextDecoder('iso-8859-1').decode(arrayBuffer);
+                    words = this.parseCSV(text);
+                }
+            }
+
+            this.customWords = words;
+
+            if (this.customWords.length === 0) {
+                alert('CSV文件中没有找到有效的单词数据，请检查格式');
+            } else {
+                alert(`成功加载 ${this.customWords.length} 个单词`);
+            }
+        }
+    }
+
+    parseCSV(text) {
+        const lines = text.split(/\r?\n/);
+        return lines
+            .map(line => line.trim())
+            .filter(line => line)
+            .map(line => {
+                // 处理逗号分隔，支持引号
+                const parts = line.split(',').map(p => p.trim());
+                return {
+                    word: (parts[0] || '').trim().toLowerCase(),
+                    meaning: (parts[1] || '').trim()
+                };
+            })
+            .filter(item => item.word && item.meaning);
+    }
+
+    bindGameEvents() {
         this.hintBtn.addEventListener('click', () => this.giveHint());
         this.skipBtn.addEventListener('click', () => this.nextWord());
         this.restartBtn.addEventListener('click', () => this.restart());
+    }
+
+    startDefaultGame() {
+        this.customWordMode = false;
+        this.uploadPanel.style.display = 'none';
+        this.gameContainer.style.display = 'block';
+        this.initElements();
+        this.bindGameEvents();
+        this.lives = this.maxLives;
+        this.updateHearts();
+        this.startLevel();
+    }
+
+    startCustomGame() {
+        if (this.customWords.length === 0) {
+            alert('请先上传Excel文件');
+            return;
+        }
+
+        this.customWordMode = true;
+        this.customWords.forEach(w => {
+            this.wordStatus.set(w.word, {correct: false, wrongCount: 0});
+        });
+        this.pendingWords = [...this.customWords];
+        this.correctCount = 0;
+        this.wrongCount = 0;
+        this.wrongWords = [];
+        this.lives = this.maxLives;
+
+        this.uploadPanel.style.display = 'none';
+        this.gameContainer.style.display = 'block';
+        this.initElements();
+        this.bindGameEvents();
+        this.updateHearts();
+        this.startLevel();
     }
 
     // 获取随机背景图片 (使用 Picsum Photos)
@@ -100,7 +239,16 @@ class WordPuzzleGame {
     }
 
     getRandomWord() {
-        // 根据难度过滤单词: 关卡越高，允许更长的单词
+        if (this.customWordMode) {
+            // 自定义模式：只从未答对的单词中选
+            if (this.pendingWords.length === 0) {
+                return null;
+            }
+            const randomIndex = Math.floor(Math.random() * this.pendingWords.length);
+            return this.pendingWords[randomIndex];
+        }
+
+        // 默认模式：根据难度过滤单词: 关卡越高，允许更长的单词
         const minLength = 2;
         const maxLength = 2 + Math.floor(this.level * 1.5);
         const availableWords = wordList.filter(w =>
@@ -120,7 +268,16 @@ class WordPuzzleGame {
 
     nextWord() {
         this.currentWord = this.getRandomWord();
-        this.usedWords.add(this.currentWord.word);
+
+        // 自定义模式下，如果所有单词都答对了，通关
+        if (this.customWordMode && !this.currentWord) {
+            this.allWordsComplete();
+            return;
+        }
+
+        if (!this.customWordMode) {
+            this.usedWords.add(this.currentWord.word);
+        }
         this.wordMeaning.textContent = this.currentWord.meaning;
         this.createInputBoxes();
     }
@@ -216,13 +373,20 @@ class WordPuzzleGame {
 
         if (allCorrect) {
             this.correctCount++;
+            if (this.customWordMode) {
+                this.markWordCorrect(this.currentWord.word);
+            }
             this.onWordCorrect();
         } else {
             this.wrongCount++;
-            this.wrongWords.push({
-                word: this.currentWord.word,
-                meaning: this.currentWord.meaning
-            });
+            if (this.customWordMode) {
+                this.markWordWrong(this.currentWord.word);
+            } else {
+                this.wrongWords.push({
+                    word: this.currentWord.word,
+                    meaning: this.currentWord.meaning
+                });
+            }
             this.lives--;
             this.updateHearts();
             // 提示正确答案
@@ -236,6 +400,23 @@ class WordPuzzleGame {
                 this.nextWord();
             }
         }
+    }
+
+    markWordCorrect(word) {
+        const status = this.wordStatus.get(word);
+        status.correct = true;
+        // 从待学习列表移除
+        this.pendingWords = this.pendingWords.filter(w => w.word !== word);
+    }
+
+    markWordWrong(word) {
+        const status = this.wordStatus.get(word);
+        status.wrongCount = (status.wrongCount || 0) + 1;
+        // 保留在待学习列表，会继续出现
+        this.wrongWords.push({
+            word: word,
+            meaning: this.currentWord.meaning
+        });
     }
 
     updateHearts() {
@@ -331,6 +512,42 @@ class WordPuzzleGame {
         btn.focus();
     }
 
+    allWordsComplete() {
+        const modal = document.createElement('div');
+        modal.className = 'level-complete';
+        modal.innerHTML = `
+            <h2>🎉 恭喜!</h2>
+            <h3>你已经掌握了所有单词!</h3>
+            <p><strong>总单词数:</strong> ${this.customWords.length}</p>
+            <p><strong>答对:</strong> ${this.correctCount}</p>
+            <p><strong>答错次数:</strong> ${this.wrongCount}</p>
+        `;
+        const btnContainer = document.createElement('div');
+        btnContainer.style.display = 'flex';
+        btnContainer.style.gap = '15px';
+        btnContainer.style.justifyContent = 'center';
+        btnContainer.style.marginTop = '20px';
+
+        if (this.wrongWords.length > 0) {
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = '保存错词';
+            saveBtn.style.background = '#28a745';
+            saveBtn.addEventListener('click', () => this.saveWrongWords());
+            btnContainer.appendChild(saveBtn);
+        }
+
+        const restartBtn = document.createElement('button');
+        restartBtn.textContent = '重新开始';
+        restartBtn.addEventListener('click', () => {
+            document.body.removeChild(modal);
+            this.restart();
+        });
+        btnContainer.appendChild(restartBtn);
+
+        modal.appendChild(btnContainer);
+        document.body.appendChild(modal);
+    }
+
     gameOver() {
         const modal = document.createElement('div');
         modal.className = 'level-complete game-over-modal';
@@ -401,14 +618,20 @@ class WordPuzzleGame {
     }
 
     restart() {
-        this.level = 1;
+        // 回到初始选择界面
+        this.customWordMode = false;
+        this.customWords = [];
+        this.wordStatus.clear();
+        this.pendingWords = [];
         this.usedWords.clear();
         this.correctCount = 0;
         this.wrongCount = 0;
         this.wrongWords = [];
+        this.level = 1;
         this.lives = this.maxLives;
-        this.updateHearts();
-        this.startLevel();
+
+        this.uploadPanel.style.display = 'block';
+        this.gameContainer.style.display = 'none';
     }
 }
 
