@@ -60,7 +60,7 @@ class WordPuzzleGame {
         this.totalPieces = this.level * this.level;
         this.completed = 0;
         this.revealedPieces = 0;
-        this.lives = this.maxLives;
+        // 保留当前生命值，不重置
         this.updateDisplay();
         this.updateHearts();
         this.loadRandomImage().catch(() => {}).finally(() => {
@@ -313,13 +313,22 @@ class WordPuzzleGame {
         `;
         const btn = document.createElement('button');
         btn.textContent = '进入下一关';
-        btn.addEventListener('click', () => {
+        const goNext = () => {
             document.body.removeChild(modal);
+            document.removeEventListener('keydown', handleEnter);
             this.level++;
             this.startLevel();
-        });
+        };
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                goNext();
+            }
+        };
+        btn.addEventListener('click', goNext);
+        document.addEventListener('keydown', handleEnter);
         modal.appendChild(btn);
         document.body.appendChild(modal);
+        btn.focus();
     }
 
     gameOver() {
